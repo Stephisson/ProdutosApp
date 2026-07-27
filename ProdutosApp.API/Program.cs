@@ -12,6 +12,19 @@ builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer(); //Swagger
 builder.Services.AddSwaggerGen(); //Swagger
 
+//Ler as configurações de origens mapeadas no appsettings.json
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
+
+//Configuração do CORS
+builder.Services.AddCors(options => 
+{ 
+    options.AddPolicy("AllowOrigins",
+        policy => policy
+        .WithOrigins(allowedOrigins!) //Valores do appsettings.json
+        .AllowAnyMethod()
+        .AllowAnyHeader()); 
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -27,8 +40,9 @@ app.UseSwaggerUI(); //Swagger
 //Executando os serviços do Scalar
 app.MapScalarApiReference(s => s.WithTheme(ScalarTheme.BluePlanet));
 
+//Configuração do CORS
+app.UseCors("AllowOrigins");
+
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
